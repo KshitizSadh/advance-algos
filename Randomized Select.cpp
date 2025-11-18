@@ -1,57 +1,53 @@
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
+#include <bits/stdc++.h>
 using namespace std;
 
-int randomPartition(int arr[], int low, int high) {
-    int randomIndex = low + rand() % (high - low + 1);
-    swap(arr[randomIndex], arr[high]);
-    
-    int pivot = arr[high];
-    int i = low - 1;
-    
-    for (int j = low; j < high; j++) {
-        if (arr[j] <= pivot) {
-            i++;
-            swap(arr[i], arr[j]);
+template <typename RandomIt, typename Compare>
+RandomIt partition(RandomIt first, RandomIt last, RandomIt pivotIt, Compare comp) {
+    using std::swap;
+    swap(*(last - 1), *pivotIt);
+
+    auto store = first;
+    for (auto it = first; it != last - 1; ++it) {
+        if (comp(*it, *(last - 1))) {
+            swap(*store, *it);
+            ++store;
         }
     }
-    swap(arr[i + 1], arr[high]);
-    return i + 1;
+    swap(*store, *(last - 1));
+    return store;
 }
 
-int randomizedSelect(int arr[], int low, int high, int i) {
-    if (low == high)
-        return arr[low];
-    
-    int pi = randomPartition(arr, low, high);
-    int k = pi - low + 1;
-    
-    if (i == k)
-        return arr[pi];
-    else if (i < k)
-        return randomizedSelect(arr, low, pi - 1, i);
-    else
-        return randomizedSelect(arr, pi + 1, high, i - k);
+template <typename RandomIt, typename Compare = std::less<>>
+typename std::iterator_traits<RandomIt>::value_type
+randomized_select(RandomIt first, RandomIt last, size_t k, Compare comp = Compare()) {
+    static random_device rd;
+    static mt19937 gen(rd());
+
+    while (true) {
+        size_t n = last - first;
+        if (n == 1) return *first;
+
+        uniform_int_distribution<size_t> dist(0, n - 1);
+        RandomIt pivotIt = first + dist(gen);
+
+        RandomIt mid = partition(first, last, pivotIt, comp);
+        size_t pivotIndex = mid - first;
+
+        if (k == pivotIndex)
+            return *mid;
+        else if (k < pivotIndex)
+            last = mid;
+        else {
+            k -= (pivotIndex + 1);
+            first = mid + 1;
+        }
+    }
 }
 
 int main() {
-    srand(time(0));
-    int n, i;
-    cout << "Enter array size: ";
-    cin >> n;
-    
-    int* arr = new int[n];
-    cout << "Enter elements: ";
-    for (int j = 0; j < n; j++)
-        cin >> arr[j];
-    
-    cout << "Enter i (1 to " << n << "): ";
-    cin >> i;
-    
-    int result = randomizedSelect(arr, 0, n - 1, i);
-    cout << i << "th smallest element: " << result << endl;
-    
-    delete[] arr;
-    return 0;
+    vector<int> data = {7, 2, 9, 4, 1, 6};
+    size_t k = 2;
+
+    int value = randomized_select(data.begin(), data.end(), k);
+    cout << k << "-th smallest element = " << value << "\n";
 }
