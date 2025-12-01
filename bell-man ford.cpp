@@ -45,16 +45,16 @@ int main() {
     int V, E, source;
     cout << "Enter vertices and edges: ";
     cin >> V >> E;
-    
+
     vector<Edge> edges(E);
     cout << "Enter edges (src dest weight):\n";
     for (int i = 0; i < E; i++)
         cin >> edges[i].src >> edges[i].dest >> edges[i].weight;
-    
+
     cout << "Enter source vertex: ";
     cin >> source;
-    
+
     bellmanFord(edges, V, source);
-    
+
     return 0;
 }

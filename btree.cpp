@@ -1,22 +1,25 @@
-// Online C++ compiler to run C++ program online
 #include <iostream>
 #include <vector>
 using namespace std;
 
-class Btreenode(){
-public:    
+class BTreeNode {
+public:
     vector<int> keys;
-    vector<Btreenode*> children;
+    vector<BTreeNode*> children;
     int t;
-    bool isleaf;
-    
-    
-    BTreeNode(int _t, bool _leaf);
-    void traverse();                
-    BTreeNode* search(int k);       
-    void insertNonFull(int k);       
-    void splitChild(int i, BTreeNode* y); 
+    bool leaf;
+
+    BTreeNode(int _t, bool _leaf) {
+        t = _t;
+        leaf = _leaf;
+    }
+
+    void traverse();
+    BTreeNode* search(int k);
+    void insertNonFull(int k);
+    void splitChild(int i, BTreeNode* y);
 };
+
 void BTreeNode::traverse() {
     int i;
     for (i = 0; i < keys.size(); i++) {
@@ -38,57 +41,56 @@ BTreeNode* BTreeNode::search(int k) {
         return nullptr;
     return children[i]->search(k);
 }
+
 void BTreeNode::insertNonFull(int k) {
     int i = keys.size() - 1;
     if (leaf) {
-        // Find location and insert key
-        keys.push_back(0); // Make space
+        keys.push_back(0);
         while (i >= 0 && keys[i] > k) {
-            keys[i+1] = keys[i];
+            keys[i + 1] = keys[i];
             i--;
         }
-        keys[i+1] = k;
+        keys[i + 1] = k;
     } else {
-        // Find child to insert into
-        while (i >= 0 && keys[i] > k)
+        while (i >= 0 && keys[i] > k) {
             i--;
+        }
         i++;
-        if (children[i]->keys.size() == 2*t - 1) {
+        if (children[i]->keys.size() == 2 * t - 1) {
             splitChild(i, children[i]);
-            if (keys[i] < k)
+            if (keys[i] < k) {
                 i++;
+            }
         }
         children[i]->insertNonFull(k);
     }
+}
+
 void BTreeNode::splitChild(int i, BTreeNode* y) {
     BTreeNode* z = new BTreeNode(y->t, y->leaf);
     int t = y->t;
 
-    // Copy last t-1 keys from y to z
     for (int j = 0; j < t - 1; j++)
         z->keys.push_back(y->keys[j + t]);
 
-    // Copy last t children if not leaf
     if (!y->leaf) {
         for (int j = 0; j < t; j++)
             z->children.push_back(y->children[j + t]);
     }
 
-    // Reduce the number of keys in y
     y->keys.resize(t - 1);
     if (!y->leaf)
         y->children.resize(t);
 
-    // Insert new child into this node
     children.insert(children.begin() + i + 1, z);
 
-    // Move a key from y to this node
     keys.insert(keys.begin() + i, y->keys[t - 1]);
 }
-  class BTree {
+
+class BTree {
 public:
     BTreeNode* root;
-    int t; // Minimum degree
+    int t;
 
     BTree(int _t) {
         root = nullptr;
@@ -108,13 +110,12 @@ public:
     void insert(int k);
 };
 
-// Insert key into the B-Tree
 void BTree::insert(int k) {
     if (root == nullptr) {
         root = new BTreeNode(t, true);
         root->keys.push_back(k);
     } else {
-        if (root->keys.size() == 2*t - 1) {
+        if (root->keys.size() == 2 * t - 1) {
             BTreeNode* s = new BTreeNode(t, false);
             s->children.push_back(root);
             s->splitChild(0, root);
@@ -131,9 +132,8 @@ void BTree::insert(int k) {
     }
 }
 
-// Main function to demonstrate
 int main() {
-    BTree t(3); // Minimum degree 3
+    BTree t(3);
 
     t.insert(10);
     t.insert(20);
